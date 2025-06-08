@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sentiment Analysis Web App</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #4361ee;
+            --primary-dark: #3a56d4;
+            --secondary: #4cc9f0;
+            --light: #f8f9fa;
+            --dark: #212529;
+            --success: #4ade80;
+            --warning: #facc15;
+            --danger: #f43f5e;
+            --neutral: #94a3b8;
+        }
+        
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            color: var(--dark);
+            line-height: 1.6;
+            min-height: 100vh;
+            padding: 0;
+            margin: 0;
+        }
+        
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+        
+        header {
+            background-color: white;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            padding: 1.5rem 0;
+            margin-bottom: 2rem;
+        }
+        
+        h1 {
+            color: var(--primary);
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+            font-weight: 700;
+        }
+        
+        h2 {
+            color: var(--dark);
+            font-size: 1.8rem;
+            margin: 1.5rem 0;
+            font-weight: 600;
+        }
+        
+        .card {
+            background-color: white;
+            border-radius: 12px;
+            box-shadow: 0 6px 16px rgba(0,0,0,0.1);
+            padding: 2rem;
+            margin-bottom: 2rem;
+            transition: transform 0.3s ease;
+        }
+        
+        .card:hover {
+            transform: translateY(-5px);
+        }
+        
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+        
+        textarea {
+            width: 100%;
+            padding: 1rem;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 1rem;
+            min-height: 120px;
+            transition: border 0.3s ease;
+            font-family: inherit;
+        }
+        
+        textarea:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.2);
+        }
+        
+        .file-input-wrapper {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 1.5rem 0;
+        }
+        
+        .file-input {
+            position: relative;
+            overflow: hidden;
+            display: inline-block;
+            width: 70%;
+        }
+        
+        .file-input input[type=file] {
+            width: 100%;
+            padding: 0.75rem;
+            border: 2px dashed #ddd;
+            border-radius: 8px;
+            background-color: #f8f9fa;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .file-input input[type=file]:hover {
+            border-color: var(--primary);
+            background-color: rgba(67, 97, 238, 0.05);
+        }
+        
+        .divider {
+            display: flex;
+            align-items: center;
+            text-align: center;
+            margin: 2rem 0;
+        }
+        
+        .divider::before,
+        .divider::after {
+            content: '';
+            flex: 1;
+            border-bottom: 1px solid #ddd;
+        }
+        
+        .divider-text {
+            padding: 0 1rem;
+            font-weight: 600;
+            color: var(--neutral);
+        }
+        
+        .btn {
+            display: inline-block;
+            padding: 0.8rem 1.5rem;
+            font-size: 1rem;
+            font-weight: 600;
+            text-align: center;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .btn-primary {
+            background-color: var(--primary);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background-color: var(--primary-dark);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(67, 97, 238, 0.3);
+        }
+        
+        .btn i {
+            margin-right: 0.5rem;
+        }
+        
+        .result-container {
+            margin-top: 2rem;
+            padding: 1.5rem;
+            border-radius: 8px;
+            text-align: center;
+            opacity: 0;
+            transform: translateY(20px);
+            animation: fadeIn 0.5s forwards;
+        }
+        
+        @keyframes fadeIn {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .result-positive {
+            background-color: rgba(74, 222, 128, 0.2);
+            border-left: 5px solid var(--success);
+            color: #166534;
+        }
+        
+        .result-negative {
+            background-color: rgba(244, 63, 94, 0.2);
+            border-left: 5px solid var(--danger);
+            color: #991b1b;
+        }
+        
+        .result-neutral {
+            background-color: rgba(148, 163, 184, 0.2);
+            border-left: 5px solid var(--neutral);
+            color: #334155;
+        }
+        
+        .sentiment-emoji {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .sentiment-score {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+        
+        .sentiment-label {
+            font-size: 1.2rem;
+            font-weight: 500;
+        }
+        
+        footer {
+            background-color: white;
+            text-align: center;
+            padding: 1rem 0;
+            margin-top: 2rem;
+            color: var(--neutral);
+            font-size: 0.9rem;
+        }
+        
+        @media (max-width: 768px) {
+            .container {
+                padding: 1rem;
+            }
+            
+            h1 {
+                font-size: 2rem;
+            }
+            
+            .card {
+                padding: 1.5rem;
+            }
+            
+            .file-input {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container">
+            <h1><i class="fas fa-chart-line"></i> Sentiment Analysis Tool</h1>
+            <p>Analyze product reviews to determine customer sentiment</p>
+        </div>
+    </header>
+
+    <div class="container">
+        <div class="card">
+            <h2><i class="fas fa-comment-dots"></i> Single Review Analysis</h2>
+            <form method="POST" action="/predict">
+                <div class="form-group">
+                    <textarea name="review" placeholder="Enter your product review here..."></textarea>
+                </div>
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-search"></i> Analyze Sentiment
+                </button>
+            </form>
+        </div>
+
+        <div class="divider">
+            <span class="divider-text">OR</span>
+        </div>
+
+        <div class="card">
+            <h2><i class="fas fa-file-csv"></i> Bulk Analysis</h2>
+            <p>Upload a CSV file with multiple reviews for batch processing</p>
+            
+            <form method="POST" action="/bulk_predict" enctype="multipart/form-data">
+                <div class="file-input-wrapper">
+                    <div class="file-input">
+                        <input type="file" name="file" accept=".csv">
+                    </div>
+                </div>
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-upload"></i> Upload and Analyze
+                </button>
+            </form>
+        </div>
+
+        {% if prediction %}
+            <div class="result-container {% if prediction == 'Positive' %}result-positive{% elif prediction == 'Negative' %}result-negative{% else %}result-neutral{% endif %}">
+                <div class="sentiment-emoji">
+                    {% if prediction == 'Positive' %}
+                        <i class="far fa-smile"></i>
+                    {% elif prediction == 'Negative' %}
+                        <i class="far fa-frown"></i>
+                    {% else %}
+                        <i class="far fa-meh"></i>
+                    {% endif %}
+                </div>
+                <div class="sentiment-score">{{ prediction }}</div>
+                <div class="sentiment-label">Review Sentiment</div>
+            </div>
+        {% endif %}
+    </div>
+
+    <footer>
+        <div class="container">
+            <p>© 2025 Sentiment Analysis Tool. All rights reserved.</p>
+        </div>
+    </footer>
+</body>
+</html>
